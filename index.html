@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulasi Gerak Parabola</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #101827;
+            color: white;
+            text-align: center;
+        }
+
+        h1 {
+            margin-top: 20px;
+        }
+
+        .kontrol {
+            margin: 20px auto;
+            max-width: 400px;
+        }
+
+        label {
+            display: block;
+            margin-top: 12px;
+        }
+
+        input {
+            width: 90%;
+            padding: 8px;
+            margin-top: 5px;
+        }
+
+        button {
+            margin-top: 18px;
+            padding: 10px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        canvas {
+            width: 90%;
+            max-width: 900px;
+            height: 450px;
+            background: #07101f;
+            border: 2px solid white;
+            border-radius: 10px;
+            margin: 20px auto;
+        }
+
+        #info {
+            font-size: 18px;
+            margin: 15px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>🚀 Simulasi Gerak Parabola</h1>
+
+    <div class="kontrol">
+
+        <label>
+            Kecepatan Awal (m/s)
+            <input type="number" id="kecepatan" value="30">
+        </label>
+
+        <label>
+            Sudut Peluncuran (°)
+            <input type="number" id="sudut" value="45">
+        </label>
+
+        <label>
+            Gravitasi (m/s²)
+            <input type="number" id="gravitasi" value="9.81">
+        </label>
+
+        <button onclick="mulaiSimulasi()">▶ Mulai Simulasi</button>
+
+    </div>
+
+    <canvas id="canvas" width="900" height="450"></canvas>
+
+    <div id="info">
+        Waktu: 0.00 s | Jarak: 0.00 m | Ketinggian: 0.00 m
+    </div>
+
+<script>
+
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+let animasi;
+
+function mulaiSimulasi() {
+
+    cancelAnimationFrame(animasi);
+
+    const v0 = Number(document.getElementById("kecepatan").value);
+    const sudut = Number(document.getElementById("sudut").value);
+    const g = Number(document.getElementById("gravitasi").value);
+
+    const theta = sudut * Math.PI / 180;
+
+    const vx = v0 * Math.cos(theta);
+    const vy = v0 * Math.sin(theta);
+
+    const waktuTerbang = (2 * vy) / g;
+    const jarakMaksimum = vx * waktuTerbang;
+    const tinggiMaksimum = (vy * vy) / (2 * g);
+
+    let waktu = 0;
+    const kecepatanAnimasi = 0.02;
+
+    function gambar() {
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Skala agar lintasan masuk canvas
+        const skalaX = 750 / jarakMaksimum;
+        const skalaY = 330 / tinggiMaksimum;
+
+        const skala = Math.min(skalaX, skalaY);
+
+        // Tanah
+        ctx.beginPath();
+        ctx.moveTo(50, 400);
+        ctx.lineTo(850, 400);
+        ctx.strokeStyle = "white";
+        ctx.stroke();
+
+        // Lintasan
+        ctx.beginPath();
+
+        for (let t = 0; t <= waktuTerbang; t += 0.02) {
+
+            const x = vx * t;
+            const y = vy * t - 0.5 * g * t * t;
+
+            const px = 50 + x * skala;
+            const py = 400 - y * skala;
+
+            if (t === 0) {
+                ctx.moveTo(px, py);
+            } else {
+                ctx.lineTo(px, py);
+            }
+        }
+
+        ctx.strokeStyle = "#00ffcc";
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        // Posisi benda
+        const x = vx * waktu;
+        const y = vy * waktu - 0.5 * g * waktu * waktu;
+
+        const px = 50 + x * skala;
+        const py = 400 - y * skala;
+
+        ctx.beginPath();
+        ctx.arc(px, py, 9, 0, Math.PI * 2);
+        ctx.fillStyle = "red";
+        ctx.fill();
+
+        // Informasi
+        document.getElementById("info").innerHTML =
+            `Waktu: ${waktu.toFixed(2)} s | ` +
+            `Jarak: ${Math.max(x, 0).toFixed(2)} m | ` +
+            `Ketinggian: ${Math.max(y, 0).toFixed(2)} m`;
+
+        waktu += kecepatanAnimasi;
+
+        if (waktu <= waktuTerbang) {
+            animasi = requestAnimationFrame(gambar);
+        }
+
+    }
+
+    gambar();
+}
+
+</script>
+
+</body>
+</html>
